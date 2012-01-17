@@ -271,3 +271,6 @@ IOMAP
 CLOCK
   devm_clk_get()
   devm_clk_put()
+
+REGULATOR
+  devm_regulator_get()
