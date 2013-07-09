@@ -639,6 +639,11 @@ static struct block_device *bd_acquire(struct inode *inode)
 	return bdev;
 }
 
+int sb_is_blkdev_sb(struct super_block *sb)
+{
+	return sb == blockdev_superblock;
+}
+
 /* Call when you free inode */
 
 void bd_forget(struct inode *inode)
