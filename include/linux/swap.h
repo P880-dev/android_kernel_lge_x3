@@ -350,6 +350,7 @@ extern struct swap_info_struct *page_swap_info(struct page *);
 extern int reuse_swap_page(struct page *);
 extern int try_to_free_swap(struct page *);
 struct backing_dev_info;
+extern struct swap_info_struct *page_swap_info(struct page *);
 
 #define valid_swaphandles(swp, off)		0
 
