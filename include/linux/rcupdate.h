@@ -186,6 +186,17 @@ extern void rcu_sched_qs(int cpu);
 extern void rcu_bh_qs(int cpu);
 extern void rcu_check_callbacks(int cpu, int user);
 struct notifier_block;
+#if defined(CONFIG_JRCU)
+static inline void rcu_idle_enter(void) { }
+static inline void rcu_idle_exit(void) { }
+static inline void rcu_irq_enter(void) { }
+static inline void rcu_irq_exit(void) { }
+#else
+extern void rcu_idle_enter(void);
+extern void rcu_idle_exit(void);
+extern void rcu_irq_enter(void);
+extern void rcu_irq_exit(void);
+#endif
 
 #ifdef CONFIG_NO_HZ
 
@@ -217,6 +228,8 @@ void wait_rcu_gp(call_rcu_func_t crf);
 #include <linux/rcutree.h>
 #elif defined(CONFIG_TINY_RCU) || defined(CONFIG_TINY_PREEMPT_RCU)
 #include <linux/rcutiny.h>
+#elif defined(CONFIG_JRCU)
+#include <linux/jrcu.h>
 #else
 #error "Unknown RCU implementation specified to kernel configuration"
 #endif
