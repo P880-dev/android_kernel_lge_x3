@@ -30,7 +30,6 @@
 #include <linux/sched.h>
 #include <linux/cpufreq.h>
 #include <linux/of.h>
-#include <linux/sys_soc.h>
 
 #include <asm/hardware/cache-l2x0.h>
 #include <asm/system.h>
