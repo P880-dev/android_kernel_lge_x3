@@ -352,6 +352,8 @@ extern int try_to_free_swap(struct page *);
 struct backing_dev_info;
 extern struct swap_info_struct *page_swap_info(struct page *);
 
+#define valid_swaphandles(swp, off)		0
+
 /* linux/mm/thrash.c */
 extern struct mm_struct *swap_token_mm;
 extern void grab_swap_token(struct mm_struct *);
