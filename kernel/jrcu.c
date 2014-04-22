@@ -610,13 +610,13 @@ static int jrcud_func(void *arg)
 
 	while (!kthread_should_stop()) {
 		if (atomic_read(&rcu_expedite)) {
-			usleep_range_interruptible(USEC_PER_MSEC,
+			usleep_range(USEC_PER_MSEC,
 				USEC_PER_MSEC);
 		} else if (rcu_hz_precise) {
-			usleep_range_interruptible(rcu_hz_period_us,
+			usleep_range(rcu_hz_period_us,
 				rcu_hz_period_us);
 		} else {
-			usleep_range_interruptible(rcu_hz_period_us,
+			usleep_range(rcu_hz_period_us,
 				rcu_hz_period_us + rcu_hz_delta_us);
 		}
 		rcu_delimit_batches();
