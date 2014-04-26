@@ -30,6 +30,11 @@
 #include "internal.h"
 
 /*
+* 4MB minimal write chunk size
+*/
+#define MIN_WRITEBACK_PAGES (4096UL >> (PAGE_CACHE_SHIFT - 10))
+
+/*
  * Passed into wb_writeback(), essentially a subset of writeback_control
  */
 struct wb_writeback_work {
@@ -41,6 +46,7 @@ struct wb_writeback_work {
 	unsigned int for_kupdate:1;
 	unsigned int range_cyclic:1;
 	unsigned int for_background:1;
+	unsigned int for_sync:1;	/* sync(2) WB_SYNC_ALL writeback */
 
 	struct list_head list;		/* pending work list */
 	struct completion *done;	/* set if the caller waits */
@@ -663,14 +669,17 @@ long writeback_inodes_wb(struct bdi_writeback *wb, long nr_pages)
 	return nr_pages - work.nr_pages;
 }
 
-static inline bool over_bground_thresh(void)
+static bool over_bground_thresh(struct backing_dev_info *bdi)
 {
 	unsigned long background_thresh, dirty_thresh;
 
 	global_dirty_limits(&background_thresh, &dirty_thresh);
 
-	return (global_page_state(NR_FILE_DIRTY) +
-		global_page_state(NR_UNSTABLE_NFS) > background_thresh);
+	if (bdi_stat(bdi, BDI_RECLAIMABLE) >
+				bdi_dirty_limit(bdi, background_thresh))
+		return true;
+
+	return false;
 }
 
 /*
@@ -732,7 +741,7 @@ static long wb_writeback(struct bdi_writeback *wb,
 		 * For background writeout, stop when we are below the
 		 * background dirty threshold
 		 */
-		if (work->for_background && !over_bground_thresh())
+		if (work->for_background && !over_bground_thresh(wb->bdi))
 			break;
 
 		if (work->for_kupdate) {
@@ -816,7 +825,7 @@ static unsigned long get_nr_dirty_pages(void)
 
 static long wb_check_background_flush(struct bdi_writeback *wb)
 {
-	if (over_bground_thresh()) {
+	if (over_bground_thresh(wb->bdi)) {
 
 		struct wb_writeback_work work = {
 			.nr_pages	= LONG_MAX,
@@ -925,7 +934,7 @@ int bdi_writeback_thread(void *data)
 	 */
 	set_user_nice(current, 0);
 
-	trace_writeback_thread_start(bdi);
+//	trace_writeback_thread_start(bdi);
 
 	while (!kthread_should_stop()) {
 		/*
