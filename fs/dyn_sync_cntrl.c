@@ -25,7 +25,7 @@
 #include <linux/writeback.h>
 
 #define DYN_FSYNC_VERSION_MAJOR 1
-#define DYN_FSYNC_VERSION_MINOR 5
+#define DYN_FSYNC_VERSION_MINOR 2
 
 /*
  * fsync_mutex protects dyn_fsync_active during early suspend / late resume
@@ -78,15 +78,15 @@ static ssize_t dyn_fsync_earlysuspend_show(struct kobject *kobj,
 	return sprintf(buf, "early suspend active: %u\n", early_suspend_active);
 }
 
-static struct kobj_attribute dyn_fsync_active_attribute = 
+static struct kobj_attribute dyn_fsync_active_attribute =
 	__ATTR(Dyn_fsync_active, 0666,
 		dyn_fsync_active_show,
 		dyn_fsync_active_store);
 
-static struct kobj_attribute dyn_fsync_version_attribute = 
+static struct kobj_attribute dyn_fsync_version_attribute =
 	__ATTR(Dyn_fsync_version, 0444, dyn_fsync_version_show, NULL);
 
-static struct kobj_attribute dyn_fsync_earlysuspend_attribute = 
+static struct kobj_attribute dyn_fsync_earlysuspend_attribute =
 	__ATTR(Dyn_fsync_earlysuspend, 0444, dyn_fsync_earlysuspend_show, NULL);
 
 static struct attribute *dyn_fsync_active_attrs[] =
@@ -107,11 +107,13 @@ static struct kobject *dyn_fsync_kobj;
 extern void sync_filesystems(int wait);
 static void dyn_fsync_force_flush(void)
 {
+	/* flush all outstanding buffers */
+	wakeup_flusher_threads(0);
 	sync_filesystems(0);
 	sync_filesystems(1);
 }
 
-static void dyn_fsync_suspend(struct early_suspend *p)
+static void dyn_fsync_early_suspend(struct early_suspend *h)
 {
 	mutex_lock(&fsync_mutex);
 	if (dyn_fsync_active) {
@@ -121,17 +123,18 @@ static void dyn_fsync_suspend(struct early_suspend *p)
 	mutex_unlock(&fsync_mutex);
 }
 
-static void dyn_fsync_resume(struct early_suspend *p)
+static void dyn_fsync_late_resume(struct early_suspend *h)
 {
 	mutex_lock(&fsync_mutex);
 	early_suspend_active = false;
 	mutex_unlock(&fsync_mutex);
 }
 
-static struct early_suspend dyn_fsync_early_suspend_handler = 
+static struct early_suspend dyn_fsync_early_suspend_handler =
 	{
-		.suspend = dyn_fsync_suspend,
-		.resume = dyn_fsync_resume,
+		.level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN,
+		.suspend = dyn_fsync_early_suspend,
+		.resume = dyn_fsync_late_resume,
 	};
 
 static int dyn_fsync_panic_event(struct notifier_block *this,
@@ -202,8 +205,3 @@ static void dyn_fsync_exit(void)
 
 module_init(dyn_fsync_init);
 module_exit(dyn_fsync_exit);
-
-MODULE_AUTHOR("Paul Reioux <reioux@gmail.com>");
-MODULE_DESCRIPTION("dynamic fsync - automatic fs sync optimizaition using"
-		"Early_suspend driver!");
-MODULE_LICENSE("GPL v2");
