@@ -328,6 +328,13 @@ config TEGRA_EMC_SCALING_ENABLE
 	depends on TEGRA_SILICON_PLATFORM
 	default n
 
+config VOLTAGE_CONTROL
+	bool "Enable user voltage control on Tegra CPU"
+	depends on TEGRA_SILICON_PLATFORM
+	default n
+	help
+	User custom voltage control interface
+
 config TEGRA_CPU_DVFS
 	bool "Enable voltage scaling on Tegra CPU"
 	depends on TEGRA_SILICON_PLATFORM
@@ -413,6 +420,12 @@ config TEGRA_CLUSTER_CONTROL
 	depends on ARCH_TEGRA_HAS_DUAL_CPU_CLUSTERS
 	default y if PM_SLEEP
 
+config INTELLI_PLUG
+        bool "Enable intelli-plug cpu hotplug driver"
+        default n
+        help
+          Generic Intelli-plug cpu hotplug driver for ARM SOCs
+
 config TEGRA_AUTO_HOTPLUG
 	bool "Enable automatic CPU hot-plugging"
 	depends on HOTPLUG_CPU && CPU_FREQ && !ARCH_CPU_PROBE_RELEASE && !ARCH_TEGRA_2x_SOC
@@ -471,6 +484,13 @@ config TEGRA_CONVSERVATIVE_GOV_ON_EARLYSUPSEND
 	default n
 	help
 	 Also will restore to original cpu frequency governor when device is resumed
+
+config TEGRA_RUNNABLE_THREAD
+	bool "Tegra3 runnable thread hotplug"
+	depends on ARCH_TEGRA_3x_SOC
+	default n
+	help
+	  Tegra3 Runnable Thread calculations for CPU hotplug
 
 config TEGRA_STAT_MON
         bool "Enable H/W statistics monitor"
@@ -600,6 +620,15 @@ config TEGRA_LP1_950
 	depends on ARCH_TEGRA_3x_SOC
 	help
 		Enable support for LP1 Core voltage to set to lowest
+
+config GROUPER_HARDBOOT_RECOVERY
+	bool "Reboot to recovery partition when using Kexec-hardboot"
+	depends on MACH_GROUPER
+	depends on KEXEC_HARDBOOT
+	default n
+	help
+	  Reboot with the recovery kernel since the boot kernel decompressor may
+	  not support the hardboot jump.
 endif
 
 config TEGRA_DC_USE_HW_BPP
@@ -610,3 +639,10 @@ config TEGRA_DC_USE_HW_BPP
 	  Programs platform data to inform DC driver to use current
 	  hardware value for bits per pixel setting.  Useful for
           preserving and displaying framebuffer content from bootloader.
+
+config RQ_STATS
+	bool "Enable Run queue statistics"
+	default n
+	help
+	  Select this to enable scheduler rune queue statistic
+	  collections

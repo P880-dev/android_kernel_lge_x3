@@ -115,7 +115,7 @@ IMMVIBESPIAPI VibeStatus SYS_API__I2C__Write( _addr, _data)
 /*
 ** Called to disable amp (disable output force)
 */
-IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpDisable(VibeUInt8 nActuatorIndex)
+/*IMMVIBESPIAPI*/ VibeStatus ImmVibeSPI_ForceOut_AmpDisable(VibeUInt8 nActuatorIndex)
 {
     int cnt = 0;
     unsigned char I2C_data[1];
@@ -147,10 +147,13 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpDisable(VibeUInt8 nActuatorIndex
     return VIBE_S_SUCCESS;
 }
 
+EXPORT_SYMBOL(ImmVibeSPI_ForceOut_AmpDisable);
+
+
 /*
 ** Called to enable amp (enable output force0)
 */
-IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpEnable(VibeUInt8 nActuatorIndex)
+/*IMMVIBESPIAPI*/ VibeStatus ImmVibeSPI_ForceOut_AmpEnable(VibeUInt8 nActuatorIndex)
 {
     int cnt = 0;	
     unsigned char I2C_data[1];
@@ -276,6 +279,7 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpEnable(VibeUInt8 nActuatorIndex)
 
     return VIBE_S_SUCCESS;
 }
+EXPORT_SYMBOL(ImmVibeSPI_ForceOut_AmpEnable);
 
 /*
 ** Called at initialization time to set PWM frequencies, disable amp, etc...
@@ -426,6 +430,15 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_SetFrequency(VibeUInt8 nActuatorInd
 {
     return VIBE_S_SUCCESS;
 }
+
+/* For tuning of the timed interface strength */
+#define DEFAULT_TIMED_STRENGTH 65
+VibeInt8 timedForce = DEFAULT_TIMED_STRENGTH;
+
+VibeStatus ImmVibeSPI_SetTimedSample() {
+    return ImmVibeSPI_ForceOut_SetSamples(0, 8, 1, &timedForce);
+}
+
 
 /*
 ** Called to get the device name (device name must be returned as ANSI char)

@@ -20,13 +20,7 @@ struct path;
  * block_dev.c
  */
 #ifdef CONFIG_BLOCK
-extern struct super_block *blockdev_superblock;
 extern void __init bdev_cache_init(void);
-
-static inline int sb_is_blkdev_sb(struct super_block *sb)
-{
-	return sb == blockdev_superblock;
-}
 
 extern int __sync_blockdev(struct block_device *bdev, int wait);
 
@@ -35,14 +29,9 @@ static inline void bdev_cache_init(void)
 {
 }
 
-static inline int sb_is_blkdev_sb(struct super_block *sb)
-{
-	return 0;
-}
-
 static inline int __sync_blockdev(struct block_device *bdev, int wait)
 {
-	return 0;
+return 0;
 }
 #endif
 
@@ -127,6 +116,7 @@ extern long do_handle_open(int mountdirfd,
  * inode.c
  */
 extern spinlock_t inode_sb_list_lock;
+extern void inode_add_lru(struct inode *inode);
 
 /*
  * fs-writeback.c
