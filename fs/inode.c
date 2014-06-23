@@ -142,7 +142,7 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	atomic_set(&inode->i_count, 1);
 	inode->i_op = &empty_iops;
 	inode->i_fop = &empty_fops;
-	inode->i_nlink = 1;
+	inode->__i_nlink = 1;
 	inode->i_opflags = 0;
 	inode->i_uid = 0;
 	inode->i_gid = 0;
@@ -336,6 +336,19 @@ static void inode_lru_list_add(struct inode *inode)
 	}
 	spin_unlock(&inode->i_sb->s_inode_lru_lock);
 }
+
+/*
+ * Add inode to LRU if needed (inode is unused and clean).
+ *
+ * Needs inode->i_lock held.
+ */
+void inode_add_lru(struct inode *inode)
+{
+	if (!(inode->i_state & (I_DIRTY | I_SYNC | I_FREEING | I_WILL_FREE)) &&
+	    !atomic_read(&inode->i_count) && inode->i_sb->s_flags & MS_ACTIVE)
+		inode_lru_list_add(inode);
+}
+
 
 static void inode_lru_list_del(struct inode *inode)
 {
@@ -1321,8 +1334,7 @@ static void iput_final(struct inode *inode)
 
 	if (!drop && (sb->s_flags & MS_ACTIVE)) {
 		inode->i_state |= I_REFERENCED;
-		if (!(inode->i_state & (I_DIRTY|I_SYNC)))
-			inode_lru_list_add(inode);
+		inode_add_lru(inode);
 		spin_unlock(&inode->i_lock);
 		return;
 	}
