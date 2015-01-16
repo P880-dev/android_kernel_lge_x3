@@ -161,12 +161,11 @@ void x3_resume_boost_start(void)
 	if (BOOST_DEBUG)
 		pr_info("x3_resume_boost_start: Disabling speed cap\n");
 	tegra_cpu_set_speed_cap(NULL);
+	cpufreq_set_max_freq(NULL, LONG_MAX);
 
 	max_freq = cpufreq_quick_get_max(0);
 	if (BOOST_DEBUG)
 		pr_info("x3_resume_boost_start: scaling_max_freq is %lu\n", max_freq );
-	
-	cpufreq_set_max_freq(NULL, LONG_MAX);
 	
 	if ( max_freq > 1000000 ) {
 		if (max_freq > 1400000 ) {
