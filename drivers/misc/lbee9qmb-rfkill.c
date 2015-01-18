@@ -121,6 +121,7 @@ static irqreturn_t host_wake_isr(int irq, void *data)
 static int lbee9qmb_rfkill_set_power(void *data, bool blocked)
 {
 	struct bcm_bt_lpm *lpm = data;
+	extern bool bt_enabled;
 
 	if (!lpm)
 		return -ENODEV;
@@ -139,6 +140,7 @@ static int lbee9qmb_rfkill_set_power(void *data, bool blocked)
 
 	if (blocked) {
 		/*                                                             */
+		bt_enabled = 0;
 		if (lpm->chip_disable) {
 			if (lpm->chip_disable())
 				dev_err(lpm->dev, "%s: uart disable failed\n",
@@ -149,6 +151,7 @@ static int lbee9qmb_rfkill_set_power(void *data, bool blocked)
 	}
 	else {
 		/*                                                            */
+		bt_enabled = 1;
 		if (lpm->chip_enable) {
 			if (lpm->chip_enable())
 				dev_err(lpm->dev, "%s: uart enable failed\n",

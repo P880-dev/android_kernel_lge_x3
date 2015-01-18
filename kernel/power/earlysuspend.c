@@ -69,6 +69,8 @@ static int state;
 static int lateResumeCount = 0;
 #endif
 
+bool bt_enabled;
+
 void register_early_suspend(struct early_suspend *handler)
 {
 	struct list_head *pos;
@@ -124,15 +126,17 @@ static void early_suspend(struct work_struct *work)
 				pr_info("early_suspend: calling %pf\n", pos->suspend);
 			pos->suspend(pos);
 		}
+	pr_debug("BT state: %d\n", bt_enabled);
 #ifdef LGE_RESTRICT_POWER_DURING_SLEEP
-	if(charging_mode == CHARGING_NONE){
+	if(charging_mode == CHARGING_NONE && bt_enabled == 0){
+		pr_debug("Restricting freq to %dkHz\n", RESTRICTED_CLOCK);
 		cpufreq_set_max_freq(NULL, RESTRICTED_CLOCK);
 #ifndef CONFIG_CPUQUIET_FRAMEWORK
 		tegra_auto_hotplug_set_max_cpus(RESTRICTED_CORE);  // must be disabled when using cpuquiet
 #endif
 	}
 	else
-	{		
+	{
 		cpufreq_set_max_freq(NULL, LONG_MAX);
 #ifndef CONFIG_CPUQUIET_FRAMEWORK
 		tegra_auto_hotplug_set_max_cpus(0);  // must be disabled when using cpuquiet
